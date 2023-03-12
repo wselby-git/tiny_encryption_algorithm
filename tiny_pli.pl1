@@ -1,0 +1,44 @@
+/* PL/I program to implement Tiny Encryption Algorithm */
+
+/* Function to encrypt a block of data using TEA */
+/* Input: plaintext - array of 2 32-bit integers */
+/*        key - array of 4 32-bit integers */
+/* Output: ciphertext - array of 2 32-bit integers */
+encrypt_tea: procedure(plaintext, key, ciphertext);
+    dcl plaintext, key, ciphertext fixed bin(31) dim(2);
+    dcl sum, delta, i, v1, v2 fixed bin(31);
+    dcl k fixed bin(31) dim(4);
+
+    /* Set up key */
+    do i = 1 to 4;
+        k(i) = key(i);
+    end;
+
+    /* Set up constants */
+    sum = 0;
+    delta = 0x9e3779b9;
+
+    /* Main loop */
+    do i = 1 to 32;
+        sum = sum + delta;
+        v1 = plaintext(1);
+        v2 = plaintext(2);
+        v1 = v1 + ((v2 << 4 + k(1)) ^ (v2 + sum) ^ (v2 >> 5 + k(2)));
+        v2 = v2 + ((v1 << 4 + k(3)) ^ (v1 + sum) ^ (v1 >> 5 + k(4)));
+        plaintext(1) = v1;
+        plaintext(2) = v2;
+    end;
+
+    /* Copy ciphertext to output */
+    ciphertext(1) = v1;
+    ciphertext(2) = v2;
+return;
+
+/* Example usage */
+dcl plain, key, cipher fixed bin(31) dim(2);
+plain = x'01234567' x'89abcdef';
+key = x'01234567' x'89abcdef' x'fedcba98' x'76543210';
+call encrypt_tea(plain, key, cipher);
+put skip list('Plaintext: ' plain(1) plain(2));
+put skip list('Key: ' key(1) key(2) key(3) key(4));
+put skip list('Ciphertext: ' cipher(1) cipher(2));
